@@ -1,0 +1,62 @@
+{
+  "name": "jira-ai-assistant",
+  "displayName": "jira-ai-assistant",
+  "description": "",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.107.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "jiraAI.analyzeTicket",
+        "title": "AI: Analyze Jira Ticket"
+      },
+      {
+        "command": "jiraAI.generatePlan",
+        "title": "AI: Generate Change Plan"
+      },
+      {
+        "command": "jiraAI.generatePrompt",
+        "title": "AI: Generate AI Prompt"
+      },
+      {
+        "command": "jiraAI.reviewChanges",
+        "title": "AI: Review & Validate Changes"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.6",
+    "@types/node": "18.x",
+    "@types/vscode": "^1.80.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.2",
+    "@typescript-eslint/parser": "^7.0.2",
+    "@vscode/test-electron": "^2.3.8",
+    "eslint": "^8.56.0",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.3.3",
+    "webpack": "^5.90.3",
+    "webpack-cli": "^5.1.4"
+  },
+  "dependencies": {
+    "axios": "^1.13.2",
+    "node-fetch": "^3.3.2"
+  }
+}
