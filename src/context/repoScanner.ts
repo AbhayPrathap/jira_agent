@@ -10,22 +10,15 @@ export function scanRepoContext(): RepoContext {
 
   const hasPackageJson = files.includes("package.json");
   const hasNestConfig = files.includes("nest-cli.json");
-  const hasTsConfig = files.includes("tsconfig.json");
 
-  const isFrontend = hasPackageJson && files.includes("src");
+  const isFrontend = hasPackageJson && files.includes("vite.config.mts");
   const isBackend =
     hasNestConfig || files.includes("server") || files.includes("backend");
-
   const packageManagers: RepoContext["packageManagers"] = [];
   if (files.includes("package-lock.json")) {
     packageManagers.push("npm");
   }
-  if (files.includes("yarn.lock")) {
-    packageManagers.push("yarn");
-  }
-  if (files.includes("pnpm-lock.yaml")) {
-    packageManagers.push("pnpm");
-  }
+
 
   const importantFiles: string[] = [];
   ["package.json", "tsconfig.json", "nest-cli.json"].forEach((f) => {

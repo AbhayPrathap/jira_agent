@@ -25,12 +25,6 @@ ${bundle.interpretation.constraints.join("\n")}
 
 --- Approved Change Plan ---
 
-Frontend Files:
-${bundle.changePlan.frontendFiles.join("\n")}
-
-Backend Files:
-${bundle.changePlan.backendFiles.join("\n")}
-
 Rationale:
 ${bundle.changePlan.rationale.join("\n")}
 

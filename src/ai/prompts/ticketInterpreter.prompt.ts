@@ -23,8 +23,6 @@ ${ticket.summary}
 Jira Description:
 ${ticket.description ?? "N/A"}
 
-Acceptance Criteria:
-${ticket.acceptanceCriteria ?? "N/A"}
 
 Repository Context:
 - Frontend: ${repo.isFrontend}

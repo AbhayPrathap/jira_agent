@@ -1,14 +1,10 @@
 import * as vscode from "vscode";
 import { analyzeTicket } from "./analyzeTicket.command";
-import { generatePlan } from "./generatePlan.command";
-import { generatePrompt } from "./generatePrompt.command";
-import { reviewChanges } from "./reviewChanges.command";
+import { WorkflowEngine } from "../orchestration/workflowEngine";
 
 export function registerCommands(context: vscode.ExtensionContext) {
+  const workflowEngine = new WorkflowEngine(context);
   context.subscriptions.push(
-    analyzeTicket(context),
-    generatePlan(),
-    generatePrompt(),
-    reviewChanges()
+    analyzeTicket(workflowEngine)
   );
 }
