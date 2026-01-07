@@ -5,7 +5,6 @@ export function mapJiraToIntent(raw: JiraRawIssue): TicketIntent {
     ticketKey: raw.key,
     summary: raw.fields.summary,
     description: extractDescription(raw.fields.description),
-    acceptanceCriteria: raw.fields.customfield_acceptance,
 
     goals: [],
     nonGoals: [],

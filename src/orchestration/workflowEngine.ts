@@ -18,91 +18,127 @@ export class WorkflowEngine {
   constructor(private readonly context: vscode.ExtensionContext) {}
 
   async startTicketAnalysis(): Promise<void> {
-
+    
     const repoContext = scanRepoContext();
     workflowStore.setRepoContext(repoContext);
 
     const ticketKey = await vscode.window.showInputBox({
       prompt: "Enter Jira ticket key (e.g. PROJ-123)",
     });
+    if (!ticketKey) {return;}
 
-    if (!ticketKey) {
-      return;
-    }
+    await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: "Analyzing Jira ticket…",
+      },
+      async () => {
+        const client = await createJiraClient(this.context);
+        const jiraService = new JiraService(client);
+        const intent = await jiraService.getTicketIntent(ticketKey);
 
-    const client = await createJiraClient(this.context);
-    const jiraService = new JiraService(client);
-    const intent = await jiraService.getTicketIntent(ticketKey);
+        workflowStore.setTicketIntent(intent);
 
-    workflowStore.setTicketIntent(intent);
+        const prompt = buildTicketInterpreterPrompt(intent, repoContext);
+        const aiClient = new OpenAIClient(this.context);
+        const agent = new TicketInterpreterAgent(aiClient);
 
-    const prompt = buildTicketInterpreterPrompt(intent, repoContext);
-    const aiClient = new OpenAIClient(this.context);
-    const agent = new TicketInterpreterAgent(aiClient);
+        const interpretation = await agent.interpret(prompt);
+        workflowStore.setTicketInterpretation(interpretation);
+      }
+    );
 
-    const interpretation = await agent.interpret(prompt);
-    const approved = await approveInterpretation(interpretation);
-
+    const approved = await approveInterpretation(
+      workflowStore.getTicketInterpretation()
+    );
     if (!approved) {
       vscode.window.showErrorMessage("Ticket interpretation rejected");
       return;
     }
 
-    workflowStore.setTicketInterpretation(interpretation);
     workflowStore.setStep(WorkflowStep.TicketAnalyzed);
 
-    vscode.window.showInformationMessage(
-      `Ticket ${intent.ticketKey} analyzed successfully`
+    const proceed = await vscode.window.showInformationMessage(
+      "Ticket analyzed successfully. Generate change plan?",
+      "Continue",
+      "Stop"
     );
+
+    if (proceed === "Continue") {
+      await this.generatePlan();
+    }
   }
 
   async generatePlan(): Promise<void> {
     if (workflowStore.getStep() !== WorkflowStep.TicketAnalyzed) {
-      vscode.window.showErrorMessage(
-        "Analyze Jira ticket before generating plan"
-      );
+      vscode.window.showErrorMessage("Analyze ticket first");
       return;
     }
 
-    const prompt = buildChangePlannerPrompt(
-      workflowStore.getTicketIntent(),
-      workflowStore.getTicketInterpretation(),
-      workflowStore.getRepoContext()
+    await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: "Generating change plan…",
+      },
+      async () => {
+        const prompt = buildChangePlannerPrompt(
+          workflowStore.getTicketIntent(),
+          workflowStore.getTicketInterpretation(),
+          workflowStore.getRepoContext()
+        );
+
+        const aiClient = new OpenAIClient(this.context);
+        const agent = new ChangePlannerAgent(aiClient);
+        const plan = await agent.plan(prompt);
+
+        workflowStore.setChangePlan(plan);
+      }
     );
 
-    const aiClient = new OpenAIClient(this.context);
-    const agent = new ChangePlannerAgent(aiClient);
-    const plan = await agent.plan(prompt);
-
-    const approved = await approveChangePlan(plan);
+    const approved = await approveChangePlan(workflowStore.getChangePlan());
     if (!approved) {
       vscode.window.showErrorMessage("Change plan rejected");
       return;
     }
 
-    workflowStore.setChangePlan(plan);
     workflowStore.setStep(WorkflowStep.PlanGenerated);
+
+    const proceed = await vscode.window.showInformationMessage(
+      "Change plan approved. Generate final AI prompt?",
+      "Continue",
+      "Stop"
+    );
+
+    if (proceed === "Continue") {
+      await this.generatePrompt();
+    }
   }
 
   async generatePrompt(): Promise<void> {
     if (workflowStore.getStep() !== WorkflowStep.PlanGenerated) {
-      vscode.window.showErrorMessage(
-        "Generate and approve a change plan first."
-      );
+      vscode.window.showErrorMessage("Generate plan first");
       return;
     }
 
-    const bundle: PromptBundle = {
-      ticket: workflowStore.getTicketIntent(),
-      interpretation: workflowStore.getTicketInterpretation(),
-      changePlan: workflowStore.getChangePlan(),
-      repoContext: workflowStore.getRepoContext(),
-      instructions: "",
-      constraints: workflowStore.getTicketInterpretation().constraints,
-    };
+    await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: "Preparing final AI prompt…",
+      },
+      async () => {
+        const bundle: PromptBundle = {
+          ticket: workflowStore.getTicketIntent(),
+          interpretation: workflowStore.getTicketInterpretation(),
+          changePlan: workflowStore.getChangePlan(),
+          repoContext: workflowStore.getRepoContext(),
+          instructions: "",
+          constraints: workflowStore.getTicketInterpretation().constraints,
+        };
 
-    const finalPrompt = buildFinalPrompt(bundle);
-    await exportPrompt(finalPrompt);
+        const finalPrompt = buildFinalPrompt(bundle);
+        await exportPrompt(finalPrompt);
+      }
+    );
 
     workflowStore.setStep(WorkflowStep.PromptGenerated);
   }

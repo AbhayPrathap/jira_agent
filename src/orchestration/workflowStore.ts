@@ -18,8 +18,6 @@ class WorkflowStore {
   private ticketInterpretation?: TicketInterpretation;
   private changePlan?: ChangePlan;
 
-  /* ------------------ workflow step ------------------ */
-
   getStep(): WorkflowStep {
     return this.currentStep;
   }
@@ -36,8 +34,6 @@ class WorkflowStore {
     this.changePlan = undefined;
   }
 
-  /* ------------------ repo context ------------------ */
-
   setRepoContext(context: RepoContext): void {
     this.repoContext = context;
   }
@@ -48,8 +44,6 @@ class WorkflowStore {
     }
     return this.repoContext;
   }
-
-  /* ------------------ ticket intent ------------------ */
 
   setTicketIntent(intent: TicketIntent): void {
     this.ticketIntent = intent;
@@ -62,8 +56,6 @@ class WorkflowStore {
     return this.ticketIntent;
   }
 
-  /* ------------------ interpretation ------------------ */
-
   setTicketInterpretation(interpretation: TicketInterpretation): void {
     this.ticketInterpretation = interpretation;
   }
@@ -74,8 +66,6 @@ class WorkflowStore {
     }
     return this.ticketInterpretation;
   }
-
-  /* ------------------ change plan ------------------ */
 
   setChangePlan(plan: ChangePlan): void {
     this.changePlan = plan;
