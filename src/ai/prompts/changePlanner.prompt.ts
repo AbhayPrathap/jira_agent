@@ -37,8 +37,6 @@ Repository Context:
 
 Return JSON strictly in this shape:
 {
-  "frontendFiles": string[],
-  "backendFiles": string[],
   "rationale": string[],
   "risks": string[],
   "assumptions": string[]

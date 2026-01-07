@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
 import { ensureGitSafe } from "../safety/gitSafety";
-import { workflowEngine } from "../orchestration/workflowEngine";
+import { WorkflowEngine } from "../orchestration/workflowEngine";
 
-export function generatePrompt() {
+export function generatePrompt(workflowEngine: WorkflowEngine) {
   return vscode.commands.registerCommand("jiraAI.generatePrompt", async () => {
     if (!ensureGitSafe()) {
       return;

@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
 import { ensureGitSafe } from "../safety/gitSafety";
-import { workflowEngine } from "../orchestration/workflowEngine";
+import { WorkflowEngine } from "../orchestration/workflowEngine";
 
-export function generatePlan() {
+export function generatePlan(workflowEngine: WorkflowEngine) {
   return vscode.commands.registerCommand("jiraAI.generatePlan", async () => {
     if (!ensureGitSafe()) {
       return;

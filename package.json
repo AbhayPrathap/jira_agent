@@ -29,7 +29,17 @@
         "command": "jiraAI.reviewChanges",
         "title": "AI: Review & Validate Changes"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Jira AI Assistant",
+      "properties": {
+        "jiraAI.openaiModel": {
+          "type": "string",
+          "default": "gpt-4o",
+          "description": "OpenAI model to use"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
@@ -57,6 +67,7 @@
   },
   "dependencies": {
     "axios": "^1.13.2",
-    "node-fetch": "^3.3.2"
+    "node-fetch": "^3.3.2",
+    "openai": "^5.23.0"
   }
 }
