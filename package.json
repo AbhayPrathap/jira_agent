@@ -4,7 +4,7 @@
   "description": "",
   "version": "0.0.1",
   "engines": {
-    "vscode": "^1.107.0"
+    "vscode": "^1.80.0"
   },
   "categories": [
     "Other"
@@ -16,18 +16,6 @@
       {
         "command": "jiraAI.analyzeTicket",
         "title": "AI: Analyze Jira Ticket"
-      },
-      {
-        "command": "jiraAI.generatePlan",
-        "title": "AI: Generate Change Plan"
-      },
-      {
-        "command": "jiraAI.generatePrompt",
-        "title": "AI: Generate AI Prompt"
-      },
-      {
-        "command": "jiraAI.reviewChanges",
-        "title": "AI: Review & Validate Changes"
       }
     ],
     "configuration": {
