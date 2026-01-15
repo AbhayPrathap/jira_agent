@@ -1,4 +1,3 @@
-import { ChangePlan } from "../ai/types/changePlan.types";
 import { RepoContext } from "../context/repoContext.types";
 import { TicketIntent } from "../jira/jira.types";
 import { TicketInterpretation } from "../ai/types/ticketInterpretation.types";
@@ -16,7 +15,6 @@ class WorkflowStore {
   private repoContext?: RepoContext;
   private ticketIntent?: TicketIntent;
   private ticketInterpretation?: TicketInterpretation;
-  private changePlan?: ChangePlan;
 
   getStep(): WorkflowStep {
     return this.currentStep;
@@ -31,7 +29,6 @@ class WorkflowStore {
     this.repoContext = undefined;
     this.ticketIntent = undefined;
     this.ticketInterpretation = undefined;
-    this.changePlan = undefined;
   }
 
   setRepoContext(context: RepoContext): void {
@@ -65,17 +62,6 @@ class WorkflowStore {
       throw new Error("Ticket interpretation not initialized");
     }
     return this.ticketInterpretation;
-  }
-
-  setChangePlan(plan: ChangePlan): void {
-    this.changePlan = plan;
-  }
-
-  getChangePlan(): ChangePlan {
-    if (!this.changePlan) {
-      throw new Error("Change plan not initialized");
-    }
-    return this.changePlan;
   }
 }
 
