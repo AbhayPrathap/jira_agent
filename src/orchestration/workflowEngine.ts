@@ -6,6 +6,7 @@ import { createJiraClient } from "../jira/jiraClient";
 import { JiraService } from "../jira/jiraService";
 import { approveInterpretation } from "../ui/intentApproval";
 import { workflowStore } from "./workflowStore";
+import { extractArrayByKey, extractJsonBlock } from "../utils/dataFormatters";
 
 export class WorkflowEngine {
   constructor(private readonly context: vscode.ExtensionContext) { }
@@ -71,8 +72,6 @@ export class WorkflowEngine {
     }, 10000)
   }
 
-
-
   async processReply(clipboardContent: string): Promise<void> {
     try {
       const replyData = this.parseQuestionsAndRisks(clipboardContent);
@@ -117,46 +116,8 @@ export class WorkflowEngine {
     }
   }
 
-
-  private extractJsonBlock(content: string): string | null {
-    const cleaned = content
-      .replace(/```json/gi, '')
-      .replace(/```/g, '')
-      .trim();
-
-    const firstBrace = cleaned.indexOf('{');
-    const lastBrace = cleaned.lastIndexOf('}');
-
-    if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
-      return null;
-    }
-
-    return cleaned.substring(firstBrace, lastBrace + 1);
-  }
-
-  private extractArrayByKey(content: string, key: string): string[] | string {
-    const regex = new RegExp(`"${key}"\\s*:\\s*\\[(.*?)\\]`, 's');
-    const match = content.match(regex);
-
-    if (!match || !match[1]) {
-      return [];
-    }
-
-    return match[1]
-      .split('\n')
-      .map(line => line.trim())
-      .filter(line => line.startsWith('"'))
-      .map(line =>
-        line
-          .replace(/^"/, '')
-          .replace(/",?$/, '')
-          .trim()
-      )
-      .filter(Boolean);
-  }
-
   private parseQuestionsAndRisks(content: string): { questions: string[], risks: string[], intent: string, impactedAreas: string[] } | null {
-    const jsonBlock = this.extractJsonBlock(content);
+    const jsonBlock = extractJsonBlock(content);
     if (jsonBlock) {
       try {
         const parsed: { questions: string[], risks: string[], intent: string, impactedAreas: string[] } = JSON.parse(jsonBlock);
@@ -171,10 +132,10 @@ export class WorkflowEngine {
     }
 
     return {
-      questions: this.extractArrayByKey(content, 'questions') as string[],
-      risks: this.extractArrayByKey(content, 'risks') as string[],
-      intent: this.extractArrayByKey(content, 'intent') as string,
-      impactedAreas: this.extractArrayByKey(content, 'impactedAreas') as string[]
+      questions: extractArrayByKey(content, 'questions') as string[],
+      risks: extractArrayByKey(content, 'risks') as string[],
+      intent: extractArrayByKey(content, 'intent') as string,
+      impactedAreas: extractArrayByKey(content, 'impactedAreas') as string[]
     };
   }
 
@@ -186,18 +147,6 @@ export class WorkflowEngine {
       }) ?? '';
     }
     return answers;
-  }
-
-  async pick(title: string, options: string[]) {
-    const result = await vscode.window.showQuickPick(options, {
-      placeHolder: title,
-    });
-
-    if (!result) {
-      throw new Error("User cancelled input");
-    }
-
-    return result;
   }
 
 }
