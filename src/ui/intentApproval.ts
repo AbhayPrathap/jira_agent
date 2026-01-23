@@ -1,5 +1,4 @@
 import * as vscode from "vscode";
-import { TicketInterpretation } from "../ai/types/ticketInterpretation.types";
 
 export async function approveInterpretation(
   interpretation: string
