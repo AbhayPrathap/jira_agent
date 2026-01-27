@@ -5,6 +5,7 @@ import { scanRepoContext } from "../context/repoScanner";
 import { createJiraClient } from "../jira/jiraClient";
 import { JiraService } from "../jira/jiraService";
 import { approveInterpretation } from "../ui/intentApproval";
+import { waitForChatReply } from "../ui/chatReplyWaiter";
 import { workflowStore } from "./workflowStore";
 import { extractArrayByKey, extractJsonBlock } from "../utils/dataFormatters";
 
@@ -52,28 +53,9 @@ export class WorkflowEngine {
     if (!intentApproval) { return; }
 
     const previousClipboard = await vscode.env.clipboard.readText();
-    const intervalId = setInterval(async () => {
-      const action = await vscode.window.showInformationMessage(
-        "Please manually select the last chat reply in the chat panel and then click 'I've Copied'",
-        "I've Copied",
-        "Cancel"
-      );
-      if (action === "I've Copied") {
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        const currentClipboard = await vscode.env.clipboard.readText();
-        if (currentClipboard && currentClipboard.trim().length > 0 && currentClipboard !== previousClipboard) {
-          clearInterval(intervalId);
-          await this.processReply(currentClipboard);
-        } else {
-          vscode.window.showErrorMessage(
-            "Failed to copy chat reply: No changes detected"
-          );
-          return;
-        }
-      } else {
-        clearInterval(intervalId);
-      }
-    }, 10000)
+    await waitForChatReply(previousClipboard, {
+      onClipboardDetected: (clipboardContent) => this.processReply(clipboardContent),
+    });
   }
 
   async processReply(clipboardContent: string): Promise<void> {
