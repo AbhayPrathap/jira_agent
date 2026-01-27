@@ -1,39 +1,57 @@
 import * as fs from "fs";
 import * as path from "path";
 import { RepoContext } from "./repoContext.types";
-import { getWorkspaceRoot } from "./workspace";
+import { getWorkspaceRoots } from "./workspace";
 
 export function scanRepoContext(): RepoContext {
-  const root = getWorkspaceRoot();
+  const roots = getWorkspaceRoots();
 
-  const files = fs.readdirSync(root);
-
-  const hasPackageJson = files.includes("package.json");
-  const hasNestConfig = files.includes("nest-cli.json");
-
-  const isFrontend = hasPackageJson && files.includes("vite.config.mts");
-  const isBackend =
-    hasNestConfig || files.includes("server") || files.includes("backend");
-  const packageManagers: RepoContext["packageManagers"] = [];
-  if (files.includes("package-lock.json")) {
-    packageManagers.push("npm");
-  }
-
-
+  let isFrontend = false;
+  let isBackend = false;
+  let hasNestConfig = false;
+  const packageManagers: Set<RepoContext["packageManagers"][number]> = new Set();
   const importantFiles: string[] = [];
-  ["package.json", "tsconfig.json", "nest-cli.json"].forEach((f) => {
-    if (files.includes(f)) {
-      importantFiles.push(f);
+  const entryPoints: string[] = [];
+
+  for (const root of roots) {
+    const files = fs.readdirSync(root);
+
+    const hasPackageJson = files.includes("package.json");
+    const folderIsFrontend = hasPackageJson && files.includes("vite.config.mts");
+    const folderIsBackend =
+      files.includes("nest-cli.json") || files.includes("server") || files.includes("backend");
+
+    if (folderIsFrontend) {
+      isFrontend = true;
     }
-  });
+    if (folderIsBackend) {
+      isBackend = true;
+    }
+    if (files.includes("nest-cli.json")) {
+      hasNestConfig = true;
+    }
+
+    if (files.includes("package-lock.json")) {
+      packageManagers.add("npm");
+    }
+
+    ["package.json", "tsconfig.json", "nest-cli.json"].forEach((f) => {
+      if (files.includes(f)) {
+        importantFiles.push(path.join(root, f));
+      }
+    });
+
+    const folderEntryPoints = detectEntryPoints(root);
+    entryPoints.push(...folderEntryPoints);
+  }
 
   return {
     isFrontend,
     isBackend,
     frontendFramework: isFrontend ? "react" : undefined,
     backendFramework: hasNestConfig ? "nestjs" : undefined,
-    packageManagers,
-    entryPoints: detectEntryPoints(root),
+    packageManagers: Array.from(packageManagers),
+    entryPoints,
     importantFiles,
   };
 }
@@ -52,5 +70,7 @@ function detectEntryPoints(root: string): string[] {
     "app.ts",
   ];
 
-  return candidates.filter((p) => fs.existsSync(path.join(root, p)));
+  return candidates
+    .filter((p) => fs.existsSync(path.join(root, p)))
+    .map((p) => path.join(root, p));
 }

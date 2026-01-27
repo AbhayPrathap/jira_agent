@@ -10,25 +10,18 @@ export enum WorkflowStep {
 }
 
 class WorkflowStore {
-  private currentStep: WorkflowStep = WorkflowStep.Idle;
 
   private repoContext?: RepoContext;
   private ticketIntent?: TicketIntent;
   private ticketInterpretation?: TicketInterpretation;
+  private intentApproval?: boolean;
 
-  getStep(): WorkflowStep {
-    return this.currentStep;
+  setIntentApproval(approval: boolean): void {
+    this.intentApproval = approval;
   }
 
-  setStep(step: WorkflowStep): void {
-    this.currentStep = step;
-  }
-
-  reset(): void {
-    this.currentStep = WorkflowStep.Idle;
-    this.repoContext = undefined;
-    this.ticketIntent = undefined;
-    this.ticketInterpretation = undefined;
+  getIntentApproval(): boolean {
+    return this.intentApproval ?? false;
   }
 
   setRepoContext(context: RepoContext): void {

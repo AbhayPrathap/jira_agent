@@ -36,6 +36,7 @@ export class WorkflowEngine {
         const prompt = buildTicketInterpreterPrompt(intent, repoContext);
 
         const approval = await approveInterpretation(prompt);
+        workflowStore.setIntentApproval(approval);
         if (!approval) { return; }
 
         await vscode.env.clipboard.writeText(prompt);
@@ -47,6 +48,9 @@ export class WorkflowEngine {
         await vscode.commands.executeCommand("editor.action.clipboardPasteAction");
       }
     );
+    const intentApproval = workflowStore.getIntentApproval();
+    if (!intentApproval) { return; }
+
     const previousClipboard = await vscode.env.clipboard.readText();
     const intervalId = setInterval(async () => {
       const action = await vscode.window.showInformationMessage(
@@ -67,7 +71,7 @@ export class WorkflowEngine {
           return;
         }
       } else {
-        return;
+        clearInterval(intervalId);
       }
     }, 10000)
   }
