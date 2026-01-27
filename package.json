@@ -25,6 +25,16 @@
           "type": "string",
           "default": "gpt-4o",
           "description": "OpenAI model to use"
+        },
+        "jiraAI.baseUrl": {
+          "type": "string",
+          "default": "",
+          "description": "Jira base URL (e.g., https://your-domain.atlassian.net). You will be prompted if not set."
+        },
+        "jiraAI.email": {
+          "type": "string",
+          "default": "",
+          "description": "Jira email address. You will be prompted if not set."
         }
       }
     }
