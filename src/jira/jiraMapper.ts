@@ -12,32 +12,42 @@ export function mapJiraToIntent(raw: JiraRawIssue): TicketIntent {
   };
 }
 
-interface DescriptionContent {
-  content: {
-    content: { type: string, text: string }[]
-  }[]
+interface AdfNode {
+  type?: string;
+  text?: string;
+  content?: AdfNode[];
+}
+
+function extractTextFromAdfNode(node: AdfNode): string {
+  if (!node) return "";
+
+  if (typeof node.text === "string") {
+    return node.text;
+  }
+
+  const content = node.content;
+  if (!Array.isArray(content)) return "";
+
+  const parts = content.map((child) => extractTextFromAdfNode(child)).filter((s) => s.length > 0);
+  return parts.join(" ");
 }
 
 function extractDescription(description: any): string | undefined {
   try {
-    if (!description?.content) {
+    if (!description?.content || !Array.isArray(description.content)) {
       return undefined;
     }
 
-    const extractText = (content: DescriptionContent['content']): string => {
-      return content
-        .map((item) => {
-          return item?.content.map((c) => c?.text ?? "").filter((text) => text.length > 0).join(" ") ?? "";
-        })
-        .filter((text) => text.length > 0)
-        .join(" ");
-    };
-    const fullText = extractText(description.content);
+    const textPerBlock = description.content.map((block: AdfNode) => extractTextFromAdfNode(block));
+    const nonEmptyBlocks = textPerBlock.filter((text: string) => text.length > 0);
+    const fullText = nonEmptyBlocks.join("\n");
+
     if (!fullText || fullText.length === 0) {
       return undefined;
     }
     return fullText;
-  } catch {
+  } catch (err) {
+    console.error("extractDescription failed:", err);
     return undefined;
   }
 }

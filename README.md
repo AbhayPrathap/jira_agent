@@ -12,6 +12,26 @@ For example if there is an image subfolder under your extension project workspac
 
 > Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
 
+## How to Run
+
+### Development Mode
+
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+2. Start the watch build (rebuilds on file changes):
+   ```bash
+   npm run watch
+   ```
+
+3. Launch the Extension Development Host:
+   - Press `F5` in VS Code, or
+   - Run **Debug: Start Debugging** from the Command Palette (`Cmd+Shift+P` / `Ctrl+Shift+P`)
+
+   A new VS Code window opens with the extension loaded. Use **AI: Analyze Jira Ticket** from the Command Palette to test it.
+
 ## Requirements
 
 If you have any requirements or dependencies, add a section describing those and how to install and configure them.
